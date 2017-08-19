@@ -56,6 +56,7 @@ void HandlerCloud::setupWifi() {
 void HandlerCloud::checkWifi() {
   if (WiFi.status() != WL_CONNECTED)
   {
+    debugMessage("Reconnect to WiFi");
     setupWifi();
   }
 }
@@ -146,6 +147,7 @@ void HandlerCloud::setupMQTT() {
 void HandlerCloud::checkMQTT() {
   if (client.connected() != true)
   {
+    debugMessage("Reconnect to MQTT Server")
     setupMQTT();
   }
 }
