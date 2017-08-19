@@ -27,9 +27,7 @@ void HandlerCloud::setupWifi() {
   char password[s.length()*2];
   s.toCharArray(password, s.length()*2);
 
-  Serial.println("#######");
-  Serial.println(ssid);
-  Serial.println(password);
+  debugMessage("###Connect To WiFi###");
   if (String(ssid) != "")
   {
     debugMessage("Connect to " + String(ssid));
@@ -128,7 +126,6 @@ void HandlerCloud::setupMQTT() {
         topicName.toCharArray(topicChar, topicName.length()*2);
         client.subscribe(topicChar);
         debugMessage("Subscribe topic: " + topicName);
-        Serial.println(topicChar);
       }
       if (topics != "")
       {
@@ -136,7 +133,6 @@ void HandlerCloud::setupMQTT() {
         topics.toCharArray(topicChar, topics.length()*2);
         client.subscribe(topicChar);
         debugMessage("Subscribe topic: " + topics);
-        Serial.println(topicChar);
       }
     } else {
       debugMessage("Connection to MQTT Failed");
@@ -172,23 +168,6 @@ void HandlerCloud::handleMQTT() {
 
 void HandlerCloud::publishMessage(char* topic, char* message) {
   client.publish(topic, message);
-}
-
-String* HandlerCloud::getCallbackString(char* topic, byte* payload, unsigned int length) {
-  debugMessage("Create Strings from Callback");
-  String ret[2] = {};
-  String msg = "";
-  for (int i = 0; i < length; i++) {
-    msg = msg + String((char)payload[i]);
-  }
-  String topicName = "";
-  for (int i = 0; i < length; i++) {
-    topicName = topicName + String((char)payload[i]);
-  }
-  Serial.println("Topic: "+topicName);
-  ret[0] = topicName;
-  ret[1] = msg;
-  return ret;
 }
 
 //Externe Helper functions
@@ -295,9 +274,7 @@ String HandlerCloud::getConfig(char* configName) {
 
   if(configName=="wifi_ssid")
   {
-    String s = redEERromString(i, lenght_wifi_ssid);
-    Serial.println(s);
-    return s;
+    return redEERromString(i, lenght_wifi_ssid);
   }
   else
   {
@@ -305,9 +282,7 @@ String HandlerCloud::getConfig(char* configName) {
   }
   if(configName=="wifi_pw")
   {
-    String s = redEERromString(i, lenght_wifi_pw);
-    Serial.println(s);
-    return s;
+    return redEERromString(i, lenght_wifi_pw);
   }
   else
   {

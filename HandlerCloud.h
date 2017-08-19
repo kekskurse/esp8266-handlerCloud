@@ -36,7 +36,6 @@ class HandlerCloud
     void checkMQTT();
     bool addTopic(char* topic);
     void setCallback(MQTT_CALLBACK_SIGNATURE);
-    String* getCallbackString(char* topic, byte* payload, unsigned int length);
     void publishMessage(char* topic, char* message);
     void handleMQTT();
 
