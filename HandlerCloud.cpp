@@ -110,10 +110,7 @@ void HandlerCloud::setupMQTT() {
     String clientName = getClientID();
     debugMessage("Client Name: " + clientName);
 
-
-
     client.setServer("mqtt.handler.cloud", 1883);
-
 
     if (client.connect((char*) clientName.c_str(), username, password)) {
       debugMessage("Connectetion to MQTT Successful");
@@ -173,7 +170,6 @@ void HandlerCloud::publishMessage(char* topic, char* message) {
 }
 
 //Externe Helper functions
-
 void HandlerCloud::setupAll(bool debug, int baudRate) {
   if (debug == true) {
     setupDebug(baudRate);
@@ -189,7 +185,6 @@ void HandlerCloud::checkAll() {
 }
 
 //Interne Helper functions
-
 void HandlerCloud::debugMessage(char* message, bool newline) {
   if (_debug == true)
   {
@@ -238,7 +233,6 @@ String HandlerCloud::getConfig(char* configName) {
   int lenght_mqtt_server = 0;
 
   while (readContent) {
-
     char value = EEPROM.read(i);
     if (String(value) == ";")
     {
