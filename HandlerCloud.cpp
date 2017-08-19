@@ -144,7 +144,7 @@ void HandlerCloud::setupMQTT() {
 void HandlerCloud::checkMQTT() {
   if (client.connected() != true)
   {
-    debugMessage("Reconnect to MQTT Server")
+    debugMessage("Reconnect to MQTT Server");
     setupMQTT();
   }
 }
