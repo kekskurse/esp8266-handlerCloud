@@ -38,6 +38,7 @@ class HandlerCloud
     void setCallback(MQTT_CALLBACK_SIGNATURE);
     void publishMessage(char* topic, char* message);
     void handleMQTT();
+    void setupHostname(char* hostname);
 
     long getRandomNumber();
 
@@ -48,10 +49,12 @@ class HandlerCloud
     int _maxTopicCount;
     void debugMessage(char* message, bool newline = true);
     void debugMessage(String message, bool newline = true);
+    void openWiFiAccessPoint();
     String macToStr(const uint8_t* mac);
     String getClientID();
     String getConfig(char* configName);
     String redEERromString(int start, int lenght);
+
 
 };
 

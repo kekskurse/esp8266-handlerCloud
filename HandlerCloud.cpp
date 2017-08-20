@@ -5,11 +5,18 @@ WiFiClient wifiClient;
 PubSubClient client(wifiClient);
 
 String _topics = "";
+char* _hostname = "";
 
 bool _internetConnection = false;
 
 HandlerCloud::HandlerCloud() {
   //_debug = false;
+}
+
+void HandlerCloud::setupHostname(char* hostname) {
+  debugMessage("Set Hostname to: ");
+  debugMessage(hostname);
+  _hostname = hostname;
 }
 
 void HandlerCloud::setupDebug(int baudRate) {
@@ -27,6 +34,7 @@ void HandlerCloud::setupWifi() {
   char password[s.length()*2];
   s.toCharArray(password, s.length()*2);
 
+  WiFi.hostname(_hostname);
   debugMessage("###Connect To WiFi###");
   if (String(ssid) != "")
   {
@@ -35,26 +43,47 @@ void HandlerCloud::setupWifi() {
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
 
+    int i = 0;
     while (WiFi.status() != WL_CONNECTED) {
+      i++;
       delay(500);
       debugMessage(".", false);
+      if (i > 25) {
+        break;
+      }
+      if (i > 25) {
+        break;
+      }
     }
 
     debugMessage("");
-    _internetConnection = true;
-    debugMessage("Connectet to WiFi and get IP: " + WiFi.localIP().toString());
+    if(WiFi.status() == WL_CONNECTED)
+    {
+      _internetConnection = true;
+      debugMessage("Connectet to WiFi and get IP: " + WiFi.localIP().toString());
+    }
+    else
+    {
+      debugMessage("Connection failed, open AP");
+       openWiFiAccessPoint();
+    }
+
   } else {
-    debugMessage("Open WiFi Access Point");
+    openWiFiAccessPoint();
+  }
+}
+
+void HandlerCloud::openWiFiAccessPoint() {
+  debugMessage("Open WiFi Access Point");
     WiFi.mode(WIFI_AP);
     WiFi.softAP("HandlerCloudConfig", "setupsetup");
     debugMessage("SSID: HandlerCloudConfig");
     debugMessage("PASS: setupsetup");
     debugMessage("IP  : " + WiFi.softAPIP().toString());
-  }
 }
 
 void HandlerCloud::checkWifi() {
-  if (WiFi.status() != WL_CONNECTED)
+  if (WiFi.status() != WL_CONNECTED && _internetConnection == true)
   {
     debugMessage("Reconnect to WiFi");
     setupWifi();
@@ -63,8 +92,26 @@ void HandlerCloud::checkWifi() {
 
 // Webpage
 void HandlerCloud::setupWebserver() {
-  server.on("/", []() {
-    server.send(200, "text/html", "<html><head> <title>Handler Cloud ESP Config</title> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, shrink-to-fit=no\"> <link href=\"style.min.css\" rel=\"stylesheet\"></head><body> <div class=\"container\"> <form method=\"POST\" action=\"/save\"> <div class=\"row\"> <div class=\"col-md-12\"> <h1>Handler Cloud ESP Config Interface</h1> <p>Setup the WiFi and MQTT for your ESP8266 Device</p> </div> </div> <div class=\"row\"> <div class=\"col-md-6\"> <h1>WiFi Config</h1> <label>SSID</label> <input name=\"wifi_ssid\" class=\"form-control\" value=\"Soeren\" placeholder=\"SSID\"> <label>Password</label> <input name=\"wifi_pw\" class=\"form-control\" value=\"Hinterhaus\" type=\"password\" placeholder=\"Password\"> </div> <div class=\"col-md-6\"> <h1>MQTT Config</h1> <label>Username</label> <input name=\"mqtt_user\" class=\"form-control\" value=\"Soeren\" placeholder=\"Username\"> <label>Password</label> <input name=\"mqtt_pass\" class=\"form-control\" value=\"Hinterhaus\" type=\"password\" placeholder=\"Password\"> <label>Server</label> <input name=\"mqtt_server\" class=\"form-control\" value=\"mqtt.handler.cloud\" placeholder=\"Server\"> </div> </div> <div class=\"row\" style=\"margin-top:20px;\"> <div class=\"col-md-12\"> <input type=\"submit\" class=\"btn btn-success\" value=\"Save\" style=\"width:100%;\"> <br><br> <center>Software from <a href=\"http://www.kekskurse.de/\">S&ouml;ren</a>. Questions via Mail hello@kekskurse.de or Twitter <a href=\"https://twitter.com/soerenposchmann\">@soerenposchmann</a>.</center> </div> </div> </form> </div></body>");  });
+  String setup_ssid = getConfig("wifi_ssid");
+  String setup_wifipw = getConfig("wifi_pw");
+  String setup_mqttuser = getConfig("mqtt_user");
+  String setup_mqttpass = getConfig("mqtt_pw");
+  String setup_mqttserver = getConfig("mqtt_server");
+  server.on("/", [setup_ssid, setup_wifipw, setup_mqttuser, setup_mqttpass, setup_mqttserver]() {
+    String html = "<html><head> <title>Handler Cloud ESP Config</title> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, shrink-to-fit=no\"> <link href=\"style.min.css\" rel=\"stylesheet\"></head><body> <div class=\"container\"> <form method=\"POST\" action=\"/save\"> <div class=\"row\"> <div class=\"col-md-12\"> <h1>Handler Cloud ESP Config Interface</h1> <p>Setup the WiFi and MQTT for your ESP8266 Device</p> </div> </div> <div class=\"row\"> <div class=\"col-md-6\"> <h1>WiFi Config</h1> <label>SSID</label> <input name=\"wifi_ssid\" class=\"form-control\" value=\"";
+    html += setup_ssid;
+    html += "\" placeholder=\"SSID\"> <label>Password</label> <input name=\"wifi_pw\" class=\"form-control\" value=\"";
+    html += setup_wifipw;
+    html += "\" type=\"password\" placeholder=\"Password\"> </div> <div class=\"col-md-6\"> <h1>MQTT Config</h1> <label>Username</label> <input name=\"mqtt_user\" class=\"form-control\" value=\"";
+    html += setup_mqttuser;
+    html += "\" placeholder=\"Username\"> <label>Password</label> <input name=\"mqtt_pass\" class=\"form-control\" value=\"";
+    html += setup_mqttpass;
+    html += "\" type=\"password\" placeholder=\"Password\"> <label>Server</label> <input name=\"mqtt_server\" class=\"form-control\" value=\"";
+    html += setup_mqttserver;
+    html += "\" placeholder=\"Server\"> </div> </div> <div class=\"row\" style=\"margin-top:20px;\"> <div class=\"col-md-12\"> <input type=\"submit\" class=\"btn btn-success\" value=\"Save\" style=\"width:100%;\"> <br><br> <center>Software from <a href=\"http://www.kekskurse.de/\">S&ouml;ren</a>. Questions via Mail hello@kekskurse.de or Twitter <a href=\"https://twitter.com/soerenposchmann\">@soerenposchmann</a>.</center> </div> </div> </form> </div></body>";
+    server.send(200, "text/html", html);
+    });
+
   server.on("/save", []() {
     //debugMessage("Save WiFi and MQTT Config");
     String wifi_ssid = server.arg("wifi_ssid");
@@ -142,7 +189,7 @@ void HandlerCloud::setupMQTT() {
   }
 }
 void HandlerCloud::checkMQTT() {
-  if (client.connected() != true)
+  if (client.connected() != true && _internetConnection == true)
   {
     debugMessage("Reconnect to MQTT Server");
     setupMQTT();
