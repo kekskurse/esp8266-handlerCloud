@@ -144,20 +144,22 @@ void HandlerCloud::handleClient() {
 void HandlerCloud::setupMQTT() {
   if (_internetConnection)
   {
+    String clientName = getClientID();
     String s = getConfig("mqtt_user");
+    clientName = s;
     char username[s.length()*2];
     s.toCharArray(username, s.length()*2);
     s = getConfig("mqtt_pw");
     char password[s.length()*2];
     s.toCharArray(password, s.length()*2);
     s = getConfig("mqtt_server");
+    String mqttServer = s;
     char server[s.length()*2];
     s.toCharArray(server, s.length()*2);
 
-    String clientName = getClientID();
     debugMessage("Client Name: " + clientName);
 
-    client.setServer("mqtt.handler.cloud", 1883);
+    client.setServer(mqttServer, 1883);
 
     if (client.connect((char*) clientName.c_str(), username, password)) {
       debugMessage("Connectetion to MQTT Successful");
